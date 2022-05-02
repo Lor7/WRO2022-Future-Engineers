@@ -37,9 +37,9 @@ def getAngle():
 
 def goStraightOn():
     global steeringSpeed, lastCorrection, quarterLap
-    if ( quarterLap == 0 or quarterLap == 2 or quarterLap == 3 or quarterLap == 1): ###
+    if ( quarterLap == 0): ###
         correction = - lastCorrection - getAngle()
-    elif ( quarterLap ):
+    elif ( quarterLap == 1 or quarterLap == 2 or quarterLap == 3 ):
         correction = - getAngle()
 
     lastCorrection = correction
