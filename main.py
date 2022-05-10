@@ -36,10 +36,10 @@ def getAngle():
         anglePosOrNeg = -1
     else:
         anglePosOrNeg = 1
-    print("Angle:", abs(angle) % 90 * anglePosOrNeg)
+    print("Angle:",  - (quarterLap * 90 * k))
     
     # return abs(angle) % 90 * anglePosOrNeg
-    return gs.angle() - (quarterLap * 90 * k)          
+    return angle - (quarterLap * 90 * k)          
     # return 90  -  (quarterLap * 90)
 
 def goStraightOn():
@@ -51,7 +51,7 @@ def goStraightOn():
 def turnBlueLine():
     global steeringSpeed, flag_line, quarterLap
     flag_line = True
-    steeringAngle = 55
+    steeringAngle = 60
     steering.run_angle(steeringSpeed, steeringAngle, wait = False) # Opening
     while (getAngle() < 88):
         wait(80)
@@ -61,7 +61,7 @@ def turnBlueLine():
 def turnOrangeLine():
     global steeringSpeed, flag_line, quarterLap
     flag_line = True
-    steeringAngle = -55
+    steeringAngle = -60
     steering.run_angle(steeringSpeed, steeringAngle, wait = False) # Opening
     while (getAngle() > -88):
         wait(80)
@@ -85,7 +85,7 @@ def takeAnAction():
 """ ALGORITHM """
 
 # Avvio la propulsione
-#motor.run(1000)
+motor.run(500)
 
 # Initializations
 steeringSpeed = 150
