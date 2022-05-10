@@ -23,33 +23,35 @@ watch = StopWatch()
 
 def getDistance():
     print("Distance:", ir.distance())
-    return ir.distace()
+    return ir.distance()
 
 def getColor():
     print("Color:", cs.color())
     return cs.color()
 
 def getAngle():
-    global quarterLap, k
-    print("Angle:", gs.angle()-(quarterLap * 90 * k))
-    return gs.angle() - (quarterLap * 90 * k)            #
-    #return 90  -  (quarterLap * 90)
+    global quarterLap, k, anglePosOrNeg
+    angle = gs.angle()
+    if (angle < 0):
+        anglePosOrNeg = -1
+    else:
+        anglePosOrNeg = 1
+    print("Angle:", abs(angle) % 90 * anglePosOrNeg)
+    
+    # return abs(angle) % 90 * anglePosOrNeg
+    return gs.angle() - (quarterLap * 90 * k)          
+    # return 90  -  (quarterLap * 90)
 
 def goStraightOn():
     global steeringSpeed, lastCorrection, quarterLap
-    if ( quarterLap == 0): ###
-        correction = - lastCorrection - getAngle()
-    elif ( quarterLap == 1 or quarterLap == 2 or quarterLap == 3 ):
-        correction = - getAngle()
-
-    lastCorrection = correction
-    print("Correction:", correction)
-    steering.run_angle(steeringSpeed, correction, wait = True)
+    
+    
+    
 
 def turnBlueLine():
     global steeringSpeed, flag_line, quarterLap
     flag_line = True
-    steeringAngle = 40
+    steeringAngle = 55
     steering.run_angle(steeringSpeed, steeringAngle, wait = False) # Opening
     while (getAngle() < 88):
         wait(80)
@@ -59,12 +61,13 @@ def turnBlueLine():
 def turnOrangeLine():
     global steeringSpeed, flag_line, quarterLap
     flag_line = True
-    steeringAngle = -40
+    steeringAngle = -55
     steering.run_angle(steeringSpeed, steeringAngle, wait = False) # Opening
     while (getAngle() > -88):
         wait(80)
     steering.run_angle(steeringSpeed, -steeringAngle, wait = True) # Closing
     quarterLap = quarterLap + 1
+    
 
 def takeAnAction():
     global action
@@ -95,6 +98,7 @@ lastCorrection = 0
 quarterLap = 0
 lapCompleted = 0
 action = ""
+anglePosOrNeg = 1
 k = 1
 # Ciclo equivalente al loop() di uno sketch Arduino
 while True:
@@ -119,10 +123,11 @@ while True:
 
     print(action)
     takeAnAction()
-    print("Quarter Lap:", quarterLap)
-    if (quarterLap == 3):
-        quarterLap = 1
+
+    if (quarterLap % 3 == 0 and flag_line == True):
+        print("Lap {lapCompleted} completed!".format(lapCompleted = lapCompleted))
         lapCompleted = lapCompleted + 1
+        flag_line = False
 
     wait(100)
 
