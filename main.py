@@ -18,7 +18,6 @@ gs = GyroSensor(Port.S1)
 watch = StopWatch()
 
 
-
 """ UTILS """
 
 def getDistance():
@@ -36,35 +35,41 @@ def getAngle():
         anglePosOrNeg = -1
     else:
         anglePosOrNeg = 1
-    print("Angle:",  - (quarterLap * 90 * k))
+    print("Angle:",  angle - (quarterLap * 90 * k))
     
     # return abs(angle) % 90 * anglePosOrNeg
     return angle - (quarterLap * 90 * k)          
     # return 90  -  (quarterLap * 90)
 
 def goStraightOn():
-    global steeringSpeed, lastCorrection, quarterLap
-    
-    
-    
+    global steeringSpeed, correction, lastCorrection
+
+    steering.run_angle(steeringSpeed, -lastCorrection, wait = True)
+    correction = -getAngle()
+    print("Correction: {correction}".format(correction = correction))
+    steering.run_angle(steeringSpeed, correction, wait = True)
+    lastCorrection = correction
+
 
 def turnBlueLine():
-    global steeringSpeed, flag_line, quarterLap
+    global steeringSpeed, flag_line, quarterLap, lastCorrection
     flag_line = True
-    steeringAngle = 60
-    steering.run_angle(steeringSpeed, steeringAngle, wait = False) # Opening
-    while (getAngle() < 88):
-        wait(80)
+    steeringAngle = 55
+    steering.run_angle(steeringSpeed, steeringAngle - lastCorrection, wait = False) # Opening
+    lastCorrection = 0
+    while (getAngle() < 85):
+        wait(20)
     steering.run_angle(steeringSpeed, -steeringAngle, wait = True) # Closing
     quarterLap = quarterLap + 1
 
 def turnOrangeLine():
-    global steeringSpeed, flag_line, quarterLap
+    global steeringSpeed, flag_line, quarterLap, lastCorrection
     flag_line = True
-    steeringAngle = -60
-    steering.run_angle(steeringSpeed, steeringAngle, wait = False) # Opening
-    while (getAngle() > -88):
-        wait(80)
+    steeringAngle = -55
+    steering.run_angle(steeringSpeed, steeringAngle - lastCorrection, wait = False) # Opening
+    lastCorrection = 0
+    while (getAngle() > -95):
+        wait(20)
     steering.run_angle(steeringSpeed, -steeringAngle, wait = True) # Closing
     quarterLap = quarterLap + 1
     
@@ -81,11 +86,10 @@ def takeAnAction():
 
 
 
-
 """ ALGORITHM """
 
 # Avvio la propulsione
-motor.run(500)
+motor.run(1000)
 
 # Initializations
 steeringSpeed = 150
@@ -94,12 +98,15 @@ watch.reset()
 gs.reset_angle(0)
 flag_line = False
 blocks = False
-lastCorrection = 0
 quarterLap = 0
 lapCompleted = 0
 action = ""
 anglePosOrNeg = 1
 k = 1
+correction = 0
+lastCorrection = 0
+time = 0
+nextTimeToCorrection = 0
 # Ciclo equivalente al loop() di uno sketch Arduino
 while True:
 
@@ -128,7 +135,13 @@ while True:
         print("Lap {lapCompleted} completed!".format(lapCompleted = lapCompleted))
         lapCompleted = lapCompleted + 1
         flag_line = False
-
+        if (lapCompleted == 3):
+            break
+    
     wait(100)
 
-#
+motor.run_time(1000, 10000, wait = False)
+secondsBeforeStopRobot = watch.time()
+while secondsBeforeStopRobot < watch.time() + 9500:
+    goStraightOn()
+    wait(400)
