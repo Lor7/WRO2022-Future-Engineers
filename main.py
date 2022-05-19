@@ -68,7 +68,7 @@ def turnOrangeLine():
     steeringAngle = -55
     steering.run_angle(steeringSpeed, steeringAngle - lastCorrection, wait = False) # Opening
     lastCorrection = 0
-    while (getAngle() > -95):
+    while (getAngle() > -85): # - 95
         wait(20)
     steering.run_angle(steeringSpeed, -steeringAngle, wait = True) # Closing
     quarterLap = quarterLap + 1
@@ -83,6 +83,48 @@ def takeAnAction():
     elif (action == "onBlueLine"):
         turnBlueLine()
     action = ""
+
+
+def moveToBlock(X, Y, W, H, Angle, typeC):
+    global focalLengthWidth, focalLengthHeight
+    focalLengthWidth = (calWidth * calDistance) / 10
+    focalLengthHeight = (calHeight * calDistance) / 25
+
+    distanceWidth = (W * focalLengthWidth) / W
+    distanceHeight = (H * focalLengthHeight) / H
+
+    distanceIR1 = ir.distance()
+    distanceIR2 = ir2.distance()
+
+
+    if (typeC == "G"):
+
+        
+        if (distanceIR1 > distanceIR2):
+            angleToBLock =  getSteeringAngle(X + (distanceIR1 / distanceIR2 * 12))
+        else: 
+            angleToBLock = getSteeringAngle(X - (distanceIR2 / distanceIR1 * 12))
+        steering.run_angle(25, angleToBlock)    
+        wait(80)
+        angleToBlock2 = getSteeringAngle(X)
+        steering.run_angle(25, (angleToBlock - angleToBlock2))   
+    else:
+        if (distanceIR2 > distanceIR1):
+            angleToBLock = getSteeringAngle(X - (distanceIR2 / distanceIR1 * 12))
+        else: 
+            angleToBLock = getSteeringAngle(X + (distanceIR1 / distanceIR2 * 12))
+        steering.run_angle(25, angleToBlock)    
+        wait(80)
+        angleToBlock2 = getSteeringAngle(X)
+        steering.run_angle(25, (angleToBlock - angleToBlock2))    
+
+def getSteeringAngle(X):
+    angle = (126.5 - X) / 2.611
+    return angle 
+
+
+def resetSteeringAngle():
+    steering.reset_angle(0)
 
 
 
@@ -107,6 +149,10 @@ correction = 0
 lastCorrection = 0
 time = 0
 nextTimeToCorrection = 0
+realBlockWidth = 10
+realBlockHigh = 20
+calWidth = 40
+calHeight = 29
 # Ciclo equivalente al loop() di uno sketch Arduino
 while True:
 
@@ -121,8 +167,29 @@ while True:
         action = "onBlueLine"
         k = 1
     # Pixy
+    nr_blocks, block = pixy2.get_blocks(1, 1)
+    if (nr_blocks > 0):
+
+        sig = block[0].sig
+        redX = block[0].x_center
+        redY = block[0].y_center
+        redW = block[0].width
+        redH = block[0].height
+        redAngle = blocks[0].angle
+
+    nr_blocks, block = pixy2.get_blocks(2, 1)
+    if (nr_blocks > 0):
+        sig = block[0].sig
+        greenX = block[0].x_center
+        greenY = block[0].y_center
+        greenW = block[0].width
+        greenH = block[0].height
+        greenAngle = blocks[0].angle
     elif (blocks):
-        pass
+        if (greeH > redH):
+            moveToBlock(greenX, greenY, greenW, greenH, 50, "G")
+        else:
+            moveToBlock(redX, redY, redW, redH, -50, "R")
     # Just go straight
     elif (True):
         action = "moveStraight"
@@ -145,3 +212,4 @@ secondsBeforeStopRobot = watch.time()
 while secondsBeforeStopRobot < watch.time() + 9500:
     goStraightOn()
     wait(400)
+    
